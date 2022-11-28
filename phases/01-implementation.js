@@ -32,23 +32,41 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
 
 
   insert(key, value) {
-    const idx = this.hashMod(key);
-    let currentPair = this.data[idx];
+    // const idx = this.hashMod(key);
+    // let currentPair = this.data[idx];
+
+    // while (currentPair && currentPair.key !== key) {
+    //   currentPair = currentPair.next
+    // }
+    // if (currentPair) {
+    //   currentPair.value = value;
+    //   return this;
+    // }
+    // const newPair = new KeyValuePair(key, value)
+    // if (this.data[idx]) newPair.next = this.data[idx]
+    // this.data[idx] = newPair
+    // this.count++
+
+    if (this.count / this.capacity > 0.7) this.resize();
+
+    // Find the bucket index
+    const index = this.hashMod(key);
+
+    let currentPair = this.data[index];
 
     while (currentPair && currentPair.key !== key) {
-      currentPair = currentPair.next
+      currentPair = currentPair.next;
     }
+
     if (currentPair) {
       currentPair.value = value;
-      return this;
+    } else {
+      const newPair = new KeyValuePair(key, value);
+      newPair.next = this.data[index];
+      this.data[index] = newPair;
+      this.count++;
     }
-    const newPair = new KeyValuePair(key, value)
-    if (this.data[idx]) newPair.next = this.data[idx]
-    this.data[idx] = newPair
-    this.count++
-
-
-
+    
   }
 
 
@@ -67,13 +85,57 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
   }
 
 
+  //iterate over old data
+  //at each, set bucket to oldData[index]//
+  //traverse the linked list
+  //each node, we fill in values
   resize() {
-    // Your code here
+    // let oldData = this.data
+    // this.capacity *= 2
+    // this.data = new Array(this.capacity).fill(null)
+    // this.count = 0
+    // let linkedList = null
+    // for (let i = 0; i < oldData.length; i++){
+    //   linkedList = oldData[i]
+    //   while (linkedList) {
+    //     this.insert(linkedList.key, linkedList.value)
+    //     linkedList = linkedList.next
+    //   }
+    // }
+
+    const oldData = this.data;
+
+    this.capacity = 2 * this.capacity;
+    this.data = new Array(this.capacity).fill(null);
+    this.count = 0;
+
+    let currentPair = null;
+
+    for (let i = 0; i < oldData.length; i++) {
+      currentPair = oldData[i];
+
+      while (currentPair) {
+        this.insert(currentPair.key, currentPair.value);
+
+        currentPair = currentPair.next;
+      }
+    }
   }
 
 
   delete(key) {
-    // Your code here
+    for (let i = 0; i < this.data.length; i++) { // iterate over all bucket in hasharray
+      let linkedList = this.data[i]       // treat each bucket as a linkedlist
+      let current = linkedList            
+      while (current) {                   // traverse linkedlist
+        if (current.next.key === key) {         // if key matches key
+          current.next = current.next.next
+          return              
+        }
+        current = current.next          // if not found, move on to the next linked list
+      }
+    }
+    return "Key not found"                  
   }
 }
 
